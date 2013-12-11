@@ -70,6 +70,8 @@ WIFI_DRIVER_FW_PATH_AP      := "/system/etc/firmware/fw_bcmdhd_apsta.bin"
 BOARD_EGL_CFG := device/lge/g2-common/egl.cfg
 
 USE_OPENGL_RENDERER := true
+VSYNC_EVENT_PHASE_OFFSET_NS := 7500000
+SF_VSYNC_EVENT_PHASE_OFFSET_NS := 5000000
 TARGET_USES_ION := true
 TARGET_USES_OVERLAY := true
 TARGET_USES_C2D_COMPOSITION := true
@@ -134,6 +136,9 @@ TARGET_RELEASETOOLS_EXTENSIONS := device/lge/g2-common/releasetools
 
 COMMON_GLOBAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_NAME='"androidboot.mode"' -DBOARD_CHARGING_CMDLINE_VALUE='"chargerlogo"'
 BOARD_USES_QC_TIME_SERVICES := true
+
+# Enable workaround for slow rom flash
+BOARD_SUPPRESS_SECURE_ERASE := true
 
 # Shader cache config options
 # Maximum size of the  GLES Shaders that can be cached for reuse.
