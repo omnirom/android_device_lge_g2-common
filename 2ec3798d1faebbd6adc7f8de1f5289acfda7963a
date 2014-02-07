@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ab62b9bd_aa78f225",
+        "filename": "BoardConfigCommon.mk",
+        "patchSetId": 2
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1000008
+      },
+      "writtenOn": "2014-02-07T03:22:48Z",
+      "side": 1,
+      "message": "What is this?  This has nothing to do with the patch described in the commit message.",
+      "revId": "2ec3798d1faebbd6adc7f8de1f5289acfda7963a",
+      "serverId": "56841c99-7c94-43d4-bf0b-cb4707e66d55",
+      "unresolved": false
+    }
+  ]
+}
