@@ -14,14 +14,15 @@
 # limitations under the License.
 #
 
-TARGET_GLOBAL_CFLAGS += -mfpu=neon -mfloat-abi=softfp
-TARGET_GLOBAL_CPPFLAGS += -mfpu=neon -mfloat-abi=softfp
+TARGET_GLOBAL_CFLAGS += -mfpu=neon-vfpv4 -mfloat-abi=softfp
+TARGET_GLOBAL_CPPFLAGS += -mfpu=neon-vfpv4 -mfloat-abi=softfp
 TARGET_CPU_ABI := armeabi-v7a
 TARGET_CPU_ABI2 := armeabi
 TARGET_CPU_SMP := true
 TARGET_ARCH := arm
 TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_CPU_VARIANT := krait
+TARGET_EXTRA_CFLAGS := -mtune=cortex-a15
 ARCH_ARM_HAVE_TLS_REGISTER := true
 
 # Krait optimizations
@@ -32,6 +33,12 @@ TARGET_KRAIT_BIONIC_PLDTHRESH := 10
 TARGET_KRAIT_BIONIC_BBTHRESH := 64
 TARGET_KRAIT_BIONIC_PLDSIZE := 64
 
+# Compiler Optimizations
+ARCH_ARM_HIGH_OPTIMIZATION := true
+
+# Enable various prefetch optimizations
+COMMON_GLOBAL_CFLAGS += -D__ARM_USE_PLD -D__ARM_CACHE_LINE_SIZE=64
+
 TARGET_NO_RADIOIMAGE := true
 TARGET_NO_BOOTLOADER := true
 
@@ -39,7 +46,7 @@ TARGET_SPECIFIC_HEADER_PATH := device/lge/g2-common/include
 
 # Kernel information
 BOARD_KERNEL_BASE     := 0x00000000
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=g2 user_debug=31 msm_rtb.filter=0x0
+BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=g2 user_debug=31 msm_rtb.filter=0x0 androidboot.selinux=permissive
 BOARD_MKBOOTIMG_ARGS  := --ramdisk_offset 0x05000000 --tags_offset 0x04800000
 BOARD_KERNEL_PAGESIZE := 2048
 BOARD_KERNEL_SEPARATED_DT := true
@@ -47,15 +54,18 @@ BOARD_KERNEL_SEPARATED_DT := true
 BOARD_CUSTOM_BOOTIMG_MK := device/lge/g2-common/releasetools/mkbootimg.mk
 TARGET_KERNEL_SOURCE := kernel/lge/msm8974
 
+# audio
 BOARD_USES_ALSA_AUDIO:= true
-BOARD_USES_FLUENCE_INCALL := true
-BOARD_USES_SEPERATED_AUDIO_INPUT := true
-BOARD_USES_SEPERATED_VOICE_SPEAKER := true
-BOARD_USES_SEPERATED_VOICE_SPEAKER_MIC := true
+AUDIO_FEATURE_DEEP_BUFFER_PRIMARY := true
+AUDIO_FEATURE_DYNAMIC_VOLUME_MIXER := true
+TARGET_USES_QCOM_COMPRESSED_AUDIO := true
+BOARD_HAVE_LOW_LATENCY_AUDIO := true
 
+# Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := galbi
 TARGET_BOARD_PLATFORM := msm8974
 
+# Wifi
 WPA_SUPPLICANT_VERSION := VER_0_8_X
 BOARD_WPA_SUPPLICANT_DRIVER := NL80211
 WPA_SUPPLICANT_VERSION      := VER_0_8_X
@@ -66,46 +76,36 @@ BOARD_WLAN_DEVICE           := bcmdhd
 WIFI_DRIVER_FW_PATH_PARAM   := "/sys/module/bcmdhd/parameters/firmware_path"
 WIFI_DRIVER_FW_PATH_STA     := "/system/etc/firmware/fw_bcmdhd.bin"
 WIFI_DRIVER_FW_PATH_AP      := "/system/etc/firmware/fw_bcmdhd_apsta.bin"
-WIFI_DRIVER_FW_PATH_P2P     := "/system/etc/firmware/fw_bcmdhd_p2p.bin"
 
 BOARD_EGL_CFG := device/lge/g2-common/egl.cfg
 
-## the main variant works... except for video scaling :(
-TARGET_QCOM_DISPLAY_VARIANT := mdss
 USE_OPENGL_RENDERER := true
 TARGET_USES_ION := true
 TARGET_USES_OVERLAY := true
 TARGET_USES_C2D_COMPOSITION := true
+NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 
-BOARD_USES_QCOM_HARDWARE := true
-TARGET_USES_QCOM_BSP := true
-COMMON_GLOBAL_CFLAGS += -DQCOM_HARDWARE -DQCOM_BSP -DLG_CAMERA_HARDWARE -DLPA_DEFAULT_BUFFER_SIZE=512
-#TARGET_DISPLAY_USE_RETIRE_FENCE := true
+OVERRIDE_RS_DRIVER := libRSDriver_adreno.so
+TARGET_FORCE_HWC_FOR_VIRTUAL_DISPLAYS := true
 
-# Audio
-TARGET_QCOM_AUDIO_VARIANT := caf
-#TARGET_USES_QCOM_COMPRESSED_AUDIO := true
-BOARD_HAVE_LOW_LATENCY_AUDIO := true
+#BOARD_USES_QCOM_HARDWARE := true
+COMMON_GLOBAL_CFLAGS += -DLG_CAMERA_HARDWARE -DLPA_DEFAULT_BUFFER_SIZE=512
+#-DQCOM_BSP -DQCOM_HARDWARE
+TARGET_DISPLAY_USE_RETIRE_FENCE := true
 
-# Media
-TARGET_QCOM_MEDIA_VARIANT := v4l2
+# Camera
+USE_DEVICE_SPECIFIC_CAMERA := true
+COMMON_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
 
-RECOVERY_FSTAB_VERSION = 2
-TARGET_RECOVERY_FSTAB = device/lge/g2-common/fstab.g2
-BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
-ENABLE_LOKI_RECOVERY := true
-TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
-BOARD_HAS_NO_SELECT_BUTTON := true
-COMMON_GLOBAL_CFLAGS += -DNO_SECURE_DISCARD
-
+# Architecture
 TARGET_USERIMAGES_USE_EXT4 := true
 BOARD_BOOTIMAGE_PARTITION_SIZE := 23068672 # 22M
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 23068672 # 22M
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 880803840 # 840M
-
 BOARD_USERDATAIMAGE_PARTITION_SIZE := 6189744128 # 5.9G
 BOARD_FLASH_BLOCK_SIZE := 131072 # (BOARD_KERNEL_PAGESIZE * 64)
 
+# Bluetooth
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/lge/g2-common/bluetooth
@@ -122,34 +122,15 @@ BOARD_HARDWARE_CLASS := device/lge/g2-common/cmhw/
 BOARD_SEPOLICY_DIRS += \
         device/lge/g2-common/sepolicy
 
-BOARD_SEPOLICY_UNION += \
-	file_contexts \
-	property_contexts \
-	te_macros \
-	bridge.te \
-	camera.te \
-	conn_init.te \
-	device.te \
-	dhcp.te \
-	domain.te \
-	drmserver.te \
-	file.te \
-	kickstart.te \
-	init.te \
-	mediaserver.te \
-	mpdecision.te \
-	netmgrd.te \
-	property.te \
-	qmux.te \
-	rild.te \
-	rmt.te \
-	sensors.te \
-	surfaceflinger.te \
-	system.te \
-	tee.te \
-	thermald.te \
-	ueventd.te \
-	wpa_supplicant.te
+# The list below is order dependent
+BOARD_SEPOLICY_UNION := \
+       device.te \
+       app.te \
+       file_contexts
+
+HAVE_ADRENO_SOURCE:= false
+
+TARGET_PROVIDES_LIBLIGHT := true
 
 BOARD_NFC_HAL_SUFFIX := g2
 
@@ -158,3 +139,31 @@ TARGET_RELEASETOOLS_EXTENSIONS := device/lge/g2-common/releasetools
 
 COMMON_GLOBAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_NAME='"androidboot.mode"' -DBOARD_CHARGING_CMDLINE_VALUE='"chargerlogo"'
 BOARD_USES_QC_TIME_SERVICES := true
+
+# Shader cache config options
+# Maximum size of the  GLES Shaders that can be cached for reuse.
+# Increase the size if shaders of size greater than 12KB are used.
+MAX_EGL_CACHE_KEY_SIZE := 12*1024
+
+# Maximum GLES shader cache size for each app to store the compiled shader
+# binaries. Decrease the size if RAM or Flash Storage size is a limitation
+# of the device.
+MAX_EGL_CACHE_SIZE := 2048*1024
+
+# Recovery
+TARGET_RECOVERY_FSTAB = device/lge/g2-common/fstab.g2
+# Use this flag if the board has a ext4 partition larger than 2gb
+BOARD_HAS_LARGE_FILESYSTEM := true
+TARGET_USERIMAGES_USE_EXT4 := true
+#TARGET_RECOVERY_INITRC := device/lge/g2/recovery/init-twrp.rc
+# TWRP specific build flags
+DEVICE_RESOLUTION := 1080x1920
+RECOVERY_SDCARD_ON_DATA := true
+BOARD_HAS_NO_REAL_SDCARD := true
+RECOVERY_GRAPHICS_USE_LINELENGTH := true
+TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
+#TW_BRIGHTNESS_PATH := /sys/devices/platform/msm_fb.590337/leds/lcd-backlight/brightness
+#TW_MAX_BRIGHTNESS := 255
+ENABLE_LOKI_RECOVERY := true
+TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
+COMMON_GLOBAL_CFLAGS += -DNO_SECURE_DISCARD
