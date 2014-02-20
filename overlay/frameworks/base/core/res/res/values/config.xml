@@ -262,5 +262,4 @@
 
     <bool name="config_lidControlsSleep">true</bool>
 
-    <bool name="config_suspendWhenScreenOffDueToProximity">true</bool>
 </resources>
