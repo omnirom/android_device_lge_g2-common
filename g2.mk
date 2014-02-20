@@ -24,13 +24,11 @@ DEVICE_PACKAGE_OVERLAYS := $(LOCAL_PATH)/overlay
 PRODUCT_AAPT_CONFIG := normal hdpi xhdpi xxhdpi
 PRODUCT_AAPT_PREF_CONFIG := xxhdpi
 
-
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/init.g2.rc:root/init.g2.rc \
     $(LOCAL_PATH)/init.g2.usb.rc:root/init.g2.usb.rc \
     $(LOCAL_PATH)/ueventd.g2.rc:root/ueventd.g2.rc \
     $(LOCAL_PATH)/fstab.g2:root/fstab.g2
-
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/audio_policy.conf:system/etc/audio_policy.conf \
@@ -105,7 +103,7 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.nfc.hce.xml:system/etc/permissions/android.hardware.nfc.hce.xml
 
 PRODUCT_PROPERTY_OVERRIDES += \
-        ro.sf.lcd_density=480 \
+    ro.sf.lcd_density=480 \
 	ro.opengles.version=196608
 
 # Audio Configuration
@@ -121,10 +119,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.audio.nsenabled=ON \
     persist.speaker.prot.enable=false \
     persist.audio.spkcall_2mic=OFF \
-	af.resampler.quality=255 \
-	audio.offload.buffer.size.kb=32 \
-	audio.offload.gapless.enabled=false \
-	av.offload.enable=true
+    af.resampler.quality=4
 
 # Do not power down SIM card when modem is sent to Low Power Mode.
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -157,9 +152,11 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	persist.radio.always_send_plmn=true
 
 #Upto 3 layers can go through overlays
-PRODUCT_PROPERTY_OVERRIDES += persist.hwc.mdpcomp.enable=true
+PRODUCT_PROPERTY_OVERRIDES +=  \
+    persist.hwc.mdpcomp.enable=true
 
-PRODUCT_TAGS += dalvik.gc.type-precise
+PRODUCT_TAGS += \
+    dalvik.gc.type-precise
 
 PRODUCT_PACKAGES += \
 	librs_jni \
@@ -189,7 +186,7 @@ PRODUCT_PACKAGES += \
 	libaudio-resampler
 
 PRODUCT_PACKAGES += \
-        libmm-omxcore \
+    libmm-omxcore \
 	libdivxdrmdecrypt \
 	libOmxVdec \
 	libOmxVenc \
@@ -225,23 +222,23 @@ PRODUCT_PROPERTY_OVERRIDES += \
     media.aac_51_output_enabled=true
 
 PRODUCT_PROPERTY_OVERRIDES += \
-        debug.egl.recordable.rgba8888=1
+    debug.egl.recordable.rgba8888=1
 
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.qc.sensors.wl_dis=true
 
 # Setup custom emergency number list based on the MCC. This is needed by RIL
 PRODUCT_PROPERTY_OVERRIDES += \
-        persist.radio.custom_ecc=1
+    persist.radio.custom_ecc=1
 
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 	persist.sys.usb.config=mtp
 
 PRODUCT_PACKAGES += \
-        lights.g2
+    lights.g2
 
 PRODUCT_COPY_FILES += \
-        $(LOCAL_PATH)/configs/bcmdhd.cal:system/etc/wifi/bcmdhd.cal
+    $(LOCAL_PATH)/configs/bcmdhd.cal:system/etc/wifi/bcmdhd.cal
 
 # Input resampling configuration
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -249,9 +246,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # This hw ships locked, work around it with loki
 PRODUCT_PACKAGES += \
-        loki.sh \
-        loki_patch \
-        loki_flash
+    loki.sh \
+    loki_patch \
+    loki_flash
 
 PRODUCT_PACKAGES += \
 	libion
@@ -265,8 +262,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # msm_rng entropy feeder
 PRODUCT_PACKAGES += \
-        qrngd \
-        qrngp
+    qrngd \
+    qrngp
 
 $(call inherit-product, frameworks/native/build/phone-xxhdpi-2048-dalvik-heap.mk)
 
