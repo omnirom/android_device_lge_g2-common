@@ -14,34 +14,31 @@
  * limitations under the License.
  */
 
-package org.cyanogenmod.hardware;
+package org.omnirom.hardware;
 
-import org.cyanogenmod.hardware.util.FileUtils;
+import org.omnirom.hardware.util.FileUtils;
 
-public class VibratorHW {
-
-    private static String NFORCE_PATH = "/sys/devices/platform/tspdrv/nforce_timed";
+public class DisplayColorCalibration {
+    private static final String COLOR_FILE = "/sys/devices/platform/kcal_ctrl.0/kcal";
+    private static final String COLOR_FILE_CTRL = "/sys/devices/platform/kcal_ctrl.0/kcal_ctrl";
 
     public static boolean isSupported() {
         return true;
     }
 
-    public static int getMaxIntensity()  {
-        return 127;
+    public static int getMaxValue()  {
+        return 255;
     }
-    public static int getMinIntensity()  {
-        return 1;
+    public static int getMinValue()  {
+        return 0;
     }
-    public static int getWarningThreshold()  {
-        return 90;
+    public static String getCurColors()  {
+        return FileUtils.readOneLine(COLOR_FILE);
     }
-    public static int getCurIntensity()  {
-        return Integer.parseInt(FileUtils.readOneLine(NFORCE_PATH));
-    }
-    public static int getDefaultIntensity()  {
-        return 65;
-    }
-    public static boolean setIntensity(int intensity)  {
-        return FileUtils.writeLine(NFORCE_PATH, String.valueOf(intensity));
+    public static boolean setColors(String colors)  {
+        if (!FileUtils.writeLine(COLOR_FILE, colors)) {
+            return false;
+        }
+        return FileUtils.writeLine(COLOR_FILE_CTRL, "1");
     }
 }
