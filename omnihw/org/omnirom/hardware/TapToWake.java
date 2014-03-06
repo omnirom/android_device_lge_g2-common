@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package org.cyanogenmod.hardware;
+package org.omnirom.hardware;
 
-import org.cyanogenmod.hardware.util.FileUtils;
+import org.omnirom.hardware.util.FileUtils;
 
 public class TapToWake {
 
