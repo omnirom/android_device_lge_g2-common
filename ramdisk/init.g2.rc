@@ -2,7 +2,8 @@ import init.g2.usb.rc
 
 on early-init
     mount debugfs debugfs /sys/kernel/debug
-    write /sys/class/leds/lcd-backlight/brightness 150
+    write /sys/class/leds/lcd-backlight/brightness 110
+    chown system system /sys/kernel/debug/kgsl/proc
 
 on init
     chmod 0701 /mnt/media_rw
@@ -11,23 +12,29 @@ on init
     mkdir /mnt/shell/emulated 0700 shell shell
     mkdir /storage/emulated 0555 root root
 
-    # Set permissions for persist partition
+# Set permissions for persist partition
     mkdir /persist 0771 system system
     mkdir /firmware 0771 system system
     mkdir /storage/usb 0000 system system
     mkdir /factory 0775 system system
     mkdir /persist-lg 0755 system system
     mkdir /mpt 0755 system system
+    mkdir /storage/sdcard1 0700 root root
+    mkdir /mnt/media_rw/sdcard1 0700 media_rw media_rw
 
     export EXTERNAL_STORAGE /storage/emulated/legacy
     export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
     export EMULATED_STORAGE_TARGET /storage/emulated
+    export SECONDARY_STORAGE /storage/sdcard1
+    export EXTERNAL_STORAGE2 /storage/sdcard1
+    export EXTERNAL_STORAGE3 /storage/sdcard1
 
     # Support legacy paths
     symlink /storage/emulated/legacy /sdcard
     symlink /storage/emulated/legacy /mnt/sdcard
     symlink /storage/emulated/legacy /storage/sdcard0
     symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+    symlink /storage/sdcard1 /sdcard1
 
     # Setup custom emergency number list based on
     # the MCC. This is needed by RIL.
@@ -42,13 +49,6 @@ on init
 
     # Prevents permission denied error for telephony
     chmod 0644 /proc/cmdline
-
-on late-init
-    write /proc/sys/kernel/sched_latency_ns 10000000
-    write /proc/sys/kernel/sched_wakeup_granularity_ns 2000000
-    write /proc/sys/kernel/randomize_va_space 2
-    write /dev/cpuctl/apps/bg_non_interactive/cpu.shares 52
-    write /dev/cpuctl/apps/bg_non_interactive/cpu.rt_runtime_us 700000
 
 on fs
     mount_all ./fstab.g2
@@ -85,14 +85,21 @@ on boot
     # create symlink for fb1 as HDMI
     symlink /dev/graphics/fb1 /dev/graphics/hdmi
 
-    # Remove write permissions to video related nodes
+    # setup permissions for fb1 related nodes
+    chown system graphics /sys/class/graphics/fb1/hpd
+    chown system graphics /sys/class/graphics/fb1/vendor_name
+    chown system graphics /sys/class/graphics/fb1/product_description
     chmod 0664 /sys/devices/virtual/graphics/fb1/hpd
-    chmod 0664 /sys/devices/virtual/graphics/fb1/video_mode
-    chmod 0664 /sys/devices/virtual/graphics/fb1/format_3d
+    chmod 0664 /sys/devices/virtual/graphics/fb1/vendor_name
+    chmod 0664 /sys/devices/virtual/graphics/fb1/product_description
 
     # Change owner and group for media server and surface flinger
     chown system system /sys/devices/virtual/graphics/fb1/format_3d
     chown system system /sys/devices/virtual/graphics/fb1/hpd
+
+    # fb2 permissions
+    chown system graphics /sys/class/graphics/fb2/ad
+    chmod 0664 /sys/devices/virtual/graphics/fb2/ad
 
     #For bridgemgr daemon to inform the USB driver of the correct transport
     chown radio radio /sys/class/android_usb/f_rmnet_smd_sdio/transport
@@ -101,6 +108,10 @@ on boot
     chown system system /dev/rtc0
 
     chown root system /proc/net/ip_conntrack
+
+    write /sys/devices/system/cpu/cpu1/online 1
+    write /sys/devices/system/cpu/cpu2/online 1
+    write /sys/devices/system/cpu/cpu3/online 1
 
     # Enable DEBUG_SUSPEND, DEBUG_EXIT_SUSPEND, and DEBUG_WAKEUP
     write /sys/module/wakelock/parameters/debug_mask 7
@@ -122,6 +133,10 @@ on boot
     write /proc/sys/net/ipv6/conf/rmnet_sdio5/accept_ra 2
     write /proc/sys/net/ipv6/conf/rmnet_sdio6/accept_ra 2
     write /proc/sys/net/ipv6/conf/rmnet_sdio7/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_usb0/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_usb1/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_usb2/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_usb3/accept_ra 2
 
 
 # NFC: create data/nfc for nv storage
@@ -139,7 +154,6 @@ on boot
     setprop net.tcp.buffersize.hspa     4094,87380,704512,4096,16384,110208
     setprop net.tcp.buffersize.hsupa    4094,87380,704512,4096,16384,110208
 
-on boot
     chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
     chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
     chmod 0660 /sys/class/rfkill/rfkill0/state
@@ -149,6 +163,10 @@ on boot
     chown bluetooth bluetooth /proc/bluetooth/sleep/btwrite
     restorecon /proc/bluetooth/sleep/lpm
     restorecon /proc/bluetooth/sleep/btwrite
+
+    # vibrator
+    chown system system /sys/class/timed_output/vibrator/amp
+    chmod 0660 /sys/class/timed_output/vibrator/amp
 
 # lights perms
     chown system system /sys/class/leds/red/brightness
@@ -204,20 +222,6 @@ on post-fs-data
     mkdir /data/system 0775 system system
     #symlink /data/misc/wifi/wpa_supplicant /data/system/wpa_supplicant
 
-    #Create directory used by sensor subsystem(dsps)
-    mkdir /data/system 0755 system system
-    mkdir /data/system/sensors
-    chmod 665 /data/system/sensors
-    write /data/system/sensors/settings 1
-    chmod 660 /data/system/sensors/settings
-
-    # AKM setting data
-    mkdir /data/misc/sensors
-    chmod 775 /data/misc/sensors
-
-    mkdir /persist/sensors
-    chmod 775 /persist/sensors
-
     #Provide the access to hostapd.conf only to root and group
     chmod 0660 /data/hostapd/hostapd.conf
 
@@ -237,30 +241,20 @@ on post-fs-data
     mkdir /data/time/ 0700 system system
 
     # Enable Power modes and set the CPU Freq Sampling rates
-    write /sys/module/lpm_resources/enable_low_power/l2 2
-    write /sys/module/lpm_resources/enable_low_power/pxo 1
-    write /sys/module/lpm_resources/enable_low_power/vdd_dig 1
-    write /sys/module/lpm_resources/enable_low_power/vdd_mem 1
-    write /sys/module/pm_8x60/modes/cpu0/power_collapse/suspend_enabled 1
-    write /sys/module/pm_8x60/modes/cpu1/power_collapse/suspend_enabled 1
-    write /sys/module/pm_8x60/modes/cpu2/power_collapse/suspend_enabled 1
-    write /sys/module/pm_8x60/modes/cpu3/power_collapse/suspend_enabled 1
-    write /sys/module/pm_8x60/modes/cpu0/power_collapse/idle_enabled 1
+    write /sys/module/lpm_levels/enable_low_power/l2 4
+    write /sys/module/msm_pm/modes/cpu0/power_collapse/suspend_enabled 1
+    write /sys/module/msm_pm/modes/cpu1/power_collapse/suspend_enabled 1
+    write /sys/module/msm_pm/modes/cpu2/power_collapse/suspend_enabled 1
+    write /sys/module/msm_pm/modes/cpu3/power_collapse/suspend_enabled 1
+    write /sys/module/msm_pm/modes/cpu0/power_collapse/idle_enabled 1
     # From the original setup scriptage, revisions != 1.0 disable retention...
-    write /sys/module/pm_8x60/modes/cpu0/retention/idle_enabled 0
-    write /sys/module/pm_8x60/modes/cpu1/retention/idle_enabled 0
-    write /sys/module/pm_8x60/modes/cpu2/retention/idle_enabled 0
-    write /sys/module/pm_8x60/modes/cpu3/retention/idle_enabled 0
+    write /sys/module/msm_pm/modes/cpu0/retention/idle_enabled 0
+    write /sys/module/msm_pm/modes/cpu1/retention/idle_enabled 0
+    write /sys/module/msm_pm/modes/cpu2/retention/idle_enabled 0
+    write /sys/module/msm_pm/modes/cpu3/retention/idle_enabled 0
 
     write /sys/module/msm_thermal/core_control/enabled 0
-    write /sys/devices/system/cpu/cpu1/online 1
-    write /sys/devices/system/cpu/cpu2/online 1
-    write /sys/devices/system/cpu/cpu3/online 1
 
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "ondemand"
-    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor "ondemand"
-    write /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor "ondemand"
-    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor "ondemand"
     write /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate 50000
     write /sys/devices/system/cpu/cpufreq/ondemand/up_threshold 90
     write /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy 1
@@ -311,14 +305,11 @@ on charger
     start irsc_util
 
     # Enable Power modes and set the CPU Freq Sampling rates
-    write /sys/module/lpm_resources/enable_low_power/l2 2
-    write /sys/module/lpm_resources/enable_low_power/pxo 1
-    write /sys/module/lpm_resources/enable_low_power/vdd_dig 1
-    write /sys/module/lpm_resources/enable_low_power/vdd_mem 1
-    write /sys/module/pm_8x60/modes/cpu0/power_collapse/suspend_enabled 1
-    write /sys/module/pm_8x60/modes/cpu1/power_collapse/suspend_enabled 1
-    write /sys/module/pm_8x60/modes/cpu2/power_collapse/suspend_enabled 1
-    write /sys/module/pm_8x60/modes/cpu3/power_collapse/suspend_enabled 1
+    write /sys/module/lpm_levels/enable_low_power/l2 4
+    write /sys/module/msm_pm/modes/cpu0/power_collapse/suspend_enabled 1
+    write /sys/module/msm_pm/modes/cpu1/power_collapse/suspend_enabled 1
+    write /sys/module/msm_pm/modes/cpu2/power_collapse/suspend_enabled 1
+    write /sys/module/msm_pm/modes/cpu3/power_collapse/suspend_enabled 1
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "powersave"
     write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor "powersave"
     write /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor "powersave"
@@ -352,6 +343,11 @@ service sensors /system/bin/sensors.qcom
     class main
     user root
     group root
+
+service qcom-sensor-sh /system/bin/sh /sensors.sh
+    class main
+    user root
+    oneshot
 
 service dhcpcd_wlan0 /system/bin/dhcpcd -aABDKL
     class main
@@ -400,6 +396,12 @@ service qcamerasvr /system/bin/mm-qcamera-daemon
     user camera
     group camera system inet input
 
+# start GNSS/Sensor interface daemon
+service gsiff_daemon /system/bin/gsiff_daemon
+    class late_start
+    user gps
+    group gps net_raw misc
+
 service qseecomd /system/bin/qseecomd
     class late_start
     user root
@@ -409,8 +411,8 @@ service cnd /system/bin/cnd
     class late_start
     socket cnd stream 660 root inet
 
-service thermal-engine /system/bin/thermal-engine --time=20
-   class late_start
+service thermal-engine /system/bin/thermal-engine
+   class main
    user root
    group root
 
@@ -465,9 +467,17 @@ service time_daemon /system/bin/time_daemon
     user root
     group root
 
+service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -w 1023 -d /mnt/media_rw/sdcard1 /storage/sdcard1
+    class late_start
+    disabled
+
 service fuse_usb /system/bin/sdcard -u 1023 -g 1023 /mnt/media_rw/usb /storage/usb
     class late_start
     disabled
+
+# This will make sure that sdcard service starts as late_start.
+on nonencrypted
+    setprop ro.fuse_sdcard ${persist.fuse_sdcard}
 
 service qrngd /system/bin/qrngd -f
     class main
