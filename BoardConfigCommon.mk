@@ -14,15 +14,14 @@
 # limitations under the License.
 #
 
-TARGET_GLOBAL_CFLAGS += -mfpu=neon-vfpv4 -mfloat-abi=softfp
-TARGET_GLOBAL_CPPFLAGS += -mfpu=neon-vfpv4 -mfloat-abi=softfp
+TARGET_GLOBAL_CFLAGS += -mfpu=neon -mfloat-abi=softfp
+TARGET_GLOBAL_CPPFLAGS += -mfpu=neon -mfloat-abi=softfp
 TARGET_CPU_ABI := armeabi-v7a
 TARGET_CPU_ABI2 := armeabi
 TARGET_CPU_SMP := true
 TARGET_ARCH := arm
 TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_CPU_VARIANT := krait
-TARGET_EXTRA_CFLAGS := -mtune=cortex-a15
 ARCH_ARM_HAVE_TLS_REGISTER := true
 
 # Krait optimizations
@@ -33,18 +32,12 @@ TARGET_KRAIT_BIONIC_PLDTHRESH := 10
 TARGET_KRAIT_BIONIC_BBTHRESH := 64
 TARGET_KRAIT_BIONIC_PLDSIZE := 64
 
-# Compiler Optimizations
-ARCH_ARM_HIGH_OPTIMIZATION := true
-
-# Enable various prefetch optimizations
-COMMON_GLOBAL_CFLAGS += -D__ARM_USE_PLD -D__ARM_CACHE_LINE_SIZE=64
-
 TARGET_NO_RADIOIMAGE := true
 TARGET_NO_BOOTLOADER := true
 
 # Kernel information
 BOARD_KERNEL_BASE     := 0x00000000
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=g2 user_debug=31 msm_rtb.filter=0x0 androidboot.selinux=permissive
+BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=g2 user_debug=31 msm_rtb.filter=0x0
 BOARD_MKBOOTIMG_ARGS  := --ramdisk_offset 0x05000000 --tags_offset 0x04800000
 BOARD_KERNEL_PAGESIZE := 2048
 BOARD_KERNEL_SEPARATED_DT := true
@@ -74,14 +67,10 @@ USE_OPENGL_RENDERER := true
 TARGET_USES_ION := true
 TARGET_USES_OVERLAY := true
 TARGET_USES_C2D_COMPOSITION := true
-NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 
 OVERRIDE_RS_DRIVER := libRSDriver_adreno.so
-TARGET_FORCE_HWC_FOR_VIRTUAL_DISPLAYS := true
 
-#BOARD_USES_QCOM_HARDWARE := true
 COMMON_GLOBAL_CFLAGS += -DLG_CAMERA_HARDWARE -DLPA_DEFAULT_BUFFER_SIZE=512
-#-DQCOM_BSP -DQCOM_HARDWARE
 TARGET_DISPLAY_USE_RETIRE_FENCE := true
 
 # Camera
@@ -119,8 +108,6 @@ TARGET_NO_RPC := true
 
 BOARD_CHARGER_ENABLE_SUSPEND := true
 
-BOARD_HARDWARE_CLASS := device/lge/g2-common/cmhw/
-
 BOARD_SEPOLICY_DIRS += \
         device/lge/g2-common/sepolicy
 
@@ -130,10 +117,6 @@ BOARD_SEPOLICY_UNION := \
        app.te \
        file_contexts
 
-HAVE_ADRENO_SOURCE:= false
-
-TARGET_PROVIDES_LIBLIGHT := true
-
 BOARD_NFC_HAL_SUFFIX := g2
 
 BOARD_RIL_CLASS := ../../../device/lge/g2-common/ril/
@@ -141,8 +124,6 @@ TARGET_RELEASETOOLS_EXTENSIONS := device/lge/g2-common/releasetools
 
 COMMON_GLOBAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_NAME='"androidboot.mode"' -DBOARD_CHARGING_CMDLINE_VALUE='"chargerlogo"'
 BOARD_USES_QC_TIME_SERVICES := true
-
-BOARD_SUPPRESS_SECURE_ERASE := true
 
 # Shader cache config options
 # Maximum size of the  GLES Shaders that can be cached for reuse.
@@ -154,5 +135,11 @@ MAX_EGL_CACHE_KEY_SIZE := 12*1024
 # of the device.
 MAX_EGL_CACHE_SIZE := 2048*1024
 
+# Surfaceflinger optimization for VD surfaces
+TARGET_FORCE_HWC_FOR_VIRTUAL_DISPLAYS := true
+NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
+
 # TWRP
 DEVICE_RESOLUTION := 1080x1920
+
+BOARD_SUPPRESS_SECURE_ERASE := true
